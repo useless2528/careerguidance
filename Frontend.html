@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Future Career Guidance</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #chatbot { position: fixed; bottom: 10px; right: 10px; background: #eee; padding: 10px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Future Career Guidance</h1>
+
+    <label>Select Education Level:</label>
+    <select id="level" onchange="loadSubgroups()">
+        <option value="">--Choose--</option>
+        {% for level in levels %}
+        <option value="{{ level }}">{{ level }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+    <label>Select Subgroup:</label>
+    <select id="subgroup" onchange="loadDetails()"></select>
+
+    <div id="details"></div>
+
+    <div id="chatbot">
+        <strong>Chatbot:</strong>
+        <p>Ask me anything about your career path!</p>
+    </div>
+
+    <script>
+        function loadSubgroups() {
+            const level = document.getElementById('level').value;
+            fetch('/subgroups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ level })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const subgroupSelect = document.getElementById('subgroup');
+                subgroupSelect.innerHTML = '<option>--Choose--</option>';
+                data.forEach(sub => {
+                    subgroupSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            });
+        }
+
+        function loadDetails() {
+            const level = document.getElementById('level').value;
+            const subgroup = document.getElementById('subgroup').value;
+            fetch('/details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ level, subgroup })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('details').innerHTML = `
+                    <h3>Details for ${subgroup}</h3>
+                    <p><strong>Skills Required:</strong> ${data.skills.join(', ')}</p>
+                    <p><strong>Next Education Level:</strong> ${data.next}</p>
+                    <p><strong>Career Options:</strong> ${data.jobs.join(', ')}</p>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
